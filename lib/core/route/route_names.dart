@@ -15,7 +15,6 @@ class RouteNames {
   static const String homeNotification = '/homeNotification';
   static const String homeMyBookmark = '/homeMyBookmark';
   static const String topMentors = '/topMentors';
-  static const String mostPopularCourses = '/mostPopularCourses';
   static const String homeSearchPage = '/homeSearchPage';
   static const String settingEditProfile = '/settingEditProfile';
   static const String settingNotification = '/settingNotification';
@@ -23,5 +22,8 @@ class RouteNames {
   static const String addNewCard = '/addNewCard';
   static const String security = '/security';
   static const String language = '/language';
+  static const String signUpConfirmEmailOrPassword = '/signUpConfirmEmailOrPassword';
+  static const String mentorProfilePage = '/mentorProfilePage';
+  static const String courseDetailsPage = '/courseDetailsPage';
 
 }

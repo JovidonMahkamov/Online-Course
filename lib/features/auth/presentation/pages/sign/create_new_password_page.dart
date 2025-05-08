@@ -1,22 +1,60 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:portfolio1/core/route/route_names.dart';
+import 'package:portfolio1/features/auth/presentation/pages/sign/sign_in_page.dart';
+import '../../bloc/auth_event.dart';
+import '../../bloc/reset_new_password/reset_new_password_state.dart';
+import '../../bloc/reset_new_password/resset_new_password_bloc.dart';
 import '../../widgets/eleveted_widgets.dart';
 import '../../widgets/text_filed_widget1.dart';
 
 class CreateNewPasswordPage extends StatefulWidget {
-  const CreateNewPasswordPage({super.key});
+  final String token;
+  const CreateNewPasswordPage({super.key, required this.token});
 
   @override
   State<CreateNewPasswordPage> createState() => _CreateNewPasswordPageState();
 }
 
 class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
+
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _repeatPassword = TextEditingController();
   bool eye = true;
   bool card = true;
+  void newPassword() {
+    String password = _passwordController.text.trim();
+    String repeatPassword = _repeatPassword.text.trim();
+
+    if (password.isEmpty || repeatPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please fill in all fields"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password != repeatPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Passwords do not match"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    BlocProvider.of<ResetNewPasswordBloc>(
+      context,
+    ).add(ResetNewPasswordEvent(newPassword: password, token: widget.token));
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +100,7 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
                   IconlyLight.lock,
                   color: Colors.black,
                 ),
+                textEditingController: _passwordController,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -81,6 +120,7 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
                   IconlyLight.lock,
                   color: Colors.black,
                 ),
+                textEditingController: _repeatPassword,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -93,56 +133,40 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
               const SizedBox(
                 height: 20,
               ),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          card = !card;
-                        });
-                      },
-                      child: card
-                          ? Container(
-                        width: 25,
-                        height: 25,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          border: Border.all(
-                            color: Color(0xff335EF7),
-                            width: 3,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      )
-                          : Container(
-                        width: 25,
-                        height: 25,
-                        decoration: BoxDecoration(
-                          image: const DecorationImage(
-                              image: AssetImage(
-                                  'assets/sign/galichka.png')),
-                          border: Border.all(
-                            color: Color(0xff335EF7),
-                            width: 3,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
+              BlocConsumer<ResetNewPasswordBloc, ResetNewPasswordState>(
+                listener: (context, state) {
+                  if (state is ResetNewPasswordSuccess) {
+                    showSuccessDialog(context, SignInPage());
+                  } else if (state is ResetNewPasswordError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is ResetNewPasswordLoading) {
+                    return const Center(
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: LoadingIndicator(
+                          indicatorType: Indicator.ballSpinFadeLoader,
+                          colors: [Colors.blueAccent],
+                          strokeWidth: 2,
                         ),
                       ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    const Text("Remember me"),
-                    const SizedBox(
-                      height: 80,
-                    ),
-
-                  ],
-                ),
+                    );
+                  } else {
+                    return LogInElevated(
+                      text: "Continue",
+                      onPressed: newPassword,
+                    );
+                  }
+                },
               ),
-              LogInElevated(onPressed: (){showSuccessDialog(context);}, text: 'Continue'),
               const SizedBox(
                 height: 50,
               ),
@@ -152,7 +176,7 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
       ),
     );
   }
-  void showSuccessDialog(BuildContext context) {
+  void showSuccessDialog(BuildContext context, Widget page) {
     showDialog(
       context: context,
       barrierDismissible: false,

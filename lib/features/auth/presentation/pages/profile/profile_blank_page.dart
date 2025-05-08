@@ -75,14 +75,14 @@ class _ProfileBlankPageState extends State<ProfileBlankPage> {
                 const SizedBox(
                   height: 20,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Full Name',
                   obscureText: false,
                 ),
                 const SizedBox(
                   height: 10,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Nickname ',
                   obscureText: false,
                 ),
@@ -106,7 +106,7 @@ class _ProfileBlankPageState extends State<ProfileBlankPage> {
                 const SizedBox(
                   height: 10,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Phone Number ',
                   obscureText: false,
                   prefixIcon: Icon(

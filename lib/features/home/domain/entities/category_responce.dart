@@ -13,3 +13,4 @@ class CategoryResponse {
     required this.results,
   });
 }
+

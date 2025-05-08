@@ -8,9 +8,11 @@ class TextFiledWidget1 extends StatefulWidget {
   final IconButton? suffixIcon;
   final TextInputType? textInputType;
   final VoidCallback? onTap;
+  void Function(String)? onSubmitted;
 
-  const TextFiledWidget1({
+   TextFiledWidget1({
     super.key,
+    this.onSubmitted,
     required this.text,
     this.textEditingController,
     this.prefixIcon,
@@ -61,6 +63,7 @@ class _TextFiledWidget1State extends State<TextFiledWidget1> {
             focusNode: _focusNode,
             obscureText: widget.obscureText,
             controller: widget.textEditingController,
+            onSubmitted: widget.onSubmitted,
             decoration: InputDecoration(
               suffixIcon: widget.suffixIcon,
               hintText: widget.text,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconly/iconly.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:portfolio1/features/auth/presentation/widgets/eleveted_widgets.dart';
 
 import '../../../../../core/route/route_names.dart';
@@ -20,85 +21,70 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-  TextEditingController();
-  final FocusNode _passwordFocusNode = FocusNode();
-  final FocusNode _confirmPasswordFocusNode = FocusNode();
-  final FocusNode _emailFocusNode = FocusNode();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
   bool _obscureText = true;
   String? _errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    _passwordFocusNode.addListener(() => setState(() {}));
-    _confirmPasswordFocusNode.addListener(() => setState(() {}));
-    _emailFocusNode.addListener(() => setState(() {}));
-  }
 
   @override
   void dispose() {
-    _passwordFocusNode.dispose();
-    _confirmPasswordFocusNode.dispose();
     _passwordController.dispose();
-    _emailFocusNode.dispose();
     _emailController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  bool _isEmailValid(String email) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email);
-  }
+  void registerUser() {
+    final emailOrPhone = _emailController.text;
+    final password = _passwordController.text;
+    final repeatPassword = _confirmPasswordController.text;
 
-  String? _validateForm() {
-    if (_emailController.text.isEmpty) {
-      return 'Please enter your email';
-    }
-    if (!_isEmailValid(_emailController.text)) {
-      return 'Please enter a valid email';
-    }
-    if (_passwordController.text.isEmpty) {
-      return 'Please enter your password';
-    }
-    if (_passwordController.text.length < 6) {
-      return 'Password must be at least 6 characters long';
-    }
-    if (_confirmPasswordController.text.isEmpty) {
-      return 'Please confirm your password';
-    }
-    if (_passwordController.text != _confirmPasswordController.text) {
-      return 'Passwords do not match';
-    }
-    return null;
-  }
-
-  void _handleSignUp() {
-    final validationError = _validateForm();
-    if (validationError != null) {
-      setState(() {
-        _errorMessage = validationError;
-      });
+    if (emailOrPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(validationError),
+          content: Text("Please enter your email or phone number."),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
-    setState(() {
-      _errorMessage = null;
-    });
+
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter your password."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (repeatPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please repeat your password."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (password != repeatPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Passwords do not match!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     context.read<RegisterUserBloc>().add(
-      RegisterUser(
-        email: _emailController.text,
-        password: _passwordController.text,
-      ),
+      RegisterUser(email: emailOrPhone, password: password),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +93,7 @@ class _SignUpPageState extends State<SignUpPage> {
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -175,30 +161,40 @@ class _SignUpPageState extends State<SignUpPage> {
                     if (state is RegisterUserSuccess) {
                       Navigator.pushNamed(
                         context,
-                        RouteNames.createNewPinPage,
-                        arguments: state.registerEntity.userId,
+                        RouteNames.signUpConfirmEmailOrPassword,
+                        arguments: {
+                          'userId': state.registerEntity.userId,
+                          'emailOrPhone': _emailController.text,
+                          'password': _passwordController.text,
+                        },
                       );
+
                     } else if (state is RegisterUserError) {
-                      print('Error state: ${state.error}');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(state.error),
                           backgroundColor: Colors.red,
                         ),
                       );
-                      setState(() {
-                        _errorMessage = state.error;
-                      });
                     }
                   },
                   builder: (context, state) {
                     if (state is RegisterUserLoading) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    else {
+                      return const Center(
+                        child: SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: LoadingIndicator(
+                            indicatorType: Indicator.ballSpinFadeLoader,
+                            colors: [Colors.blueAccent],
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    } else {
                       return LogInElevated(
-                        text: 'signUp',
-                        onPressed: _handleSignUp,
+                        text: "Sign Up",
+                        onPressed: registerUser,
                       );
                     }
                   },

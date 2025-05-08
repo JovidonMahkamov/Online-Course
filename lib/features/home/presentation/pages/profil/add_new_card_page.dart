@@ -53,7 +53,7 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
               SizedBox(
                 height: 12.h,
               ),
-              const TextFiledWidget1(
+               TextFiledWidget1(
                 text: 'Card Name',
                 obscureText: false,
               ),

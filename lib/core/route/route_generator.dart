@@ -10,9 +10,8 @@ import 'package:portfolio1/features/auth/presentation/pages/sign/sign_up_page.da
 import 'package:portfolio1/features/home/presentation/pages/home/home_my_bookmark_page.dart';
 import 'package:portfolio1/features/home/presentation/pages/home/home_notification_page.dart';
 import 'package:portfolio1/features/home/presentation/pages/home/home_page.dart';
-import 'package:portfolio1/features/home/presentation/pages/home/home_search_type_keyword_page.dart';
-import 'package:portfolio1/features/home/presentation/pages/home/most_popular_courses_page.dart';
-import 'package:portfolio1/features/home/presentation/pages/home/top_%20mentors_page.dart';
+import 'package:portfolio1/features/home/presentation/pages/home/montors/mentor_profile_page.dart';
+import 'package:portfolio1/features/home/presentation/pages/home/montors/mentors_page.dart';
 import 'package:portfolio1/features/home/presentation/pages/profil/add_new_card_page.dart';
 import 'package:portfolio1/features/home/presentation/pages/profil/setting_edit_profile.dart';
 import 'package:portfolio1/features/home/presentation/pages/profil/setting_language_page.dart';
@@ -24,7 +23,10 @@ import '../../features/auth/presentation/pages/into/home_carousel_page.dart';
 import '../../features/auth/presentation/pages/into/splash_page.dart';
 import '../../features/auth/presentation/pages/profile/create_new_pin_page.dart';
 import '../../features/auth/presentation/pages/sign/lets_in_page.dart';
+import '../../features/auth/presentation/pages/sign/sign_up_confirm_email_or_password.dart';
 import '../../features/home/presentation/pages/home/bottom_nav_bar.dart';
+import '../../features/home/presentation/pages/home/course_details_page.dart';
+import '../../features/home/presentation/pages/home/search/search_page.dart';
 
 
 
@@ -52,12 +54,12 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) =>   const SetFingerprintPage());
       case RouteNames.forgotPassword:
         return MaterialPageRoute(builder: (_) =>   const ForgotPassword());
-      case RouteNames.forgotPasswordTypeOtpPage:
-        final userId = routeSettings.arguments as int;
-        final emailOrPhone = routeSettings.arguments as String;
-        return MaterialPageRoute(builder: (_) =>    ForgotPasswordTypeOtpPage(userId: userId, emailOrPhone: emailOrPhone,));
+      case RouteNames.forgotPasswordTypeOtpPage: final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(builder: (_) =>    ForgotPasswordTypeOtpPage(userId: args['userId'],
+          emailOrPhone: args['emailOrPhone'],));
       case RouteNames.createNewPassword:
-        return MaterialPageRoute(builder: (_) =>    const CreateNewPasswordPage());
+        final token = routeSettings.arguments as String;
+        return MaterialPageRoute(builder: (_) =>    CreateNewPasswordPage(token: token,));
       case RouteNames.homePage:
         return MaterialPageRoute(builder: (_) =>    const HomePage());
       case RouteNames.bottom_Navbar:
@@ -67,11 +69,9 @@ class AppRoute {
       case RouteNames.homeMyBookmark:
         return MaterialPageRoute(builder: (_) =>    const HomeMyBookmarkPage());
       case RouteNames.topMentors:
-        return MaterialPageRoute(builder: (_) =>    const TopMentorsPage());
-      case RouteNames.mostPopularCourses:
-        return MaterialPageRoute(builder: (_) =>    const MostPopularCoursesPage());
+        return MaterialPageRoute(builder: (_) =>    const MentorsPage());
       case RouteNames.homeSearchPage:
-        return MaterialPageRoute(builder: (_) =>    const HomeSearchTypeKeywordPage());
+        return MaterialPageRoute(builder: (_) =>    const SearchPage());
       case RouteNames.settingEditProfile:
         return MaterialPageRoute(builder: (_) =>    const SettingEditProfile());
       case RouteNames.settingNotification:
@@ -84,7 +84,20 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) =>    const SettingSecurityPage());
       case RouteNames.language:
         return MaterialPageRoute(builder: (_) =>    const SettingLanguagePage());
-
+      case RouteNames.signUpConfirmEmailOrPassword:
+        final args = routeSettings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => SignUpConfirmEmailOrPassword(
+            userId: args['userId'],
+            emailOrPhone: args['emailOrPhone'],
+            password: args['password'],
+          ),
+        );
+      case RouteNames.mentorProfilePage:
+        return MaterialPageRoute(builder: (_) =>    const MentorProfilePage());
+      case RouteNames.courseDetailsPage:
+        final id = routeSettings.arguments as int;
+        return MaterialPageRoute(builder: (_) =>     CourseDetailsPage(id: id,));
 
       default:
         return _errorRoute();

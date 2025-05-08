@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconly/iconly.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:portfolio1/features/auth/presentation/widgets/eleveted_widgets.dart';
 
 import '../../../../../core/route/route_names.dart';
@@ -21,12 +22,21 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   final TextEditingController _emailController = TextEditingController();
 
   void resetPassword() {
-    context.read<ResetPasswordBloc>().add(
-      ResetPasswordEvent(
-        emailOrPhone: _emailController.text.trim(),
-      ),
-    );
+    String email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter your email"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    BlocProvider.of<ResetPasswordBloc>(
+      context,
+    ).add(ResetPasswordEvent(emailOrPhone: email));
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,28 +52,41 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            SizedBox(height: 24.h,),
-            Center(child: Image.asset("assets/images/forgor_password1.png")),
-            SizedBox(height: 22.h,),
+            SizedBox(
+              height: 24.h,
+            ),
+            Center(child: Image.asset("assets/sign/forgot_password.png")),
+            SizedBox(
+              height: 22.h,
+            ),
             Text(
               "Select which contact details should we use to reset your password.",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
             ),
-            SizedBox(height: 22.h,),
+            SizedBox(
+              height: 22.h,
+            ),
             TextFiledWidget1(
               text: 'Email',
               textEditingController: _emailController,
               prefixIcon: Icon(IconlyBold.message),
               obscureText: false,
             ),
-            SizedBox(height: 28.h,),
+            SizedBox(
+              height: 28.h,
+            ),
             BlocConsumer<ResetPasswordBloc, ResetPasswordState>(
               listener: (context, state) {
                 if (state is ResetPasswordSuccess) {
-                  Navigator.pushNamed(context, RouteNames.forgotPasswordTypeOtpPage,
-                      arguments: state.response.userId);
+                  Navigator.pushNamed(
+                    context,
+                    RouteNames.forgotPasswordTypeOtpPage,
+                    arguments: {
+                      'userId': state.response.userId,
+                      'emailOrPhone': _emailController.text,
+                    },
+                  );
                 } else if (state is ResetPasswordError) {
-                  print('Error state: ${state.message}');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
@@ -74,20 +97,28 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               },
               builder: (context, state) {
                 if (state is ResetPasswordLoading) {
-                  return CircularProgressIndicator();
+                  return const Center(
+                    child: SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: LoadingIndicator(
+                        indicatorType: Indicator.ballSpinFadeLoader,
+                        colors: [Colors.blueAccent],
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  );
+                } else {
+                  return LogInElevated(
+                    text: "Continue",
+                    onPressed: resetPassword,
+                  );
                 }
-                return LogInElevated(
-                  text: "Continue",
-                  onPressed: () {
-                    resetPassword();
-                  },
-                );
               },
             ),
           ],
         ),
       ),
-
     );
   }
 }

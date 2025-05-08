@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconly/iconly.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:portfolio1/features/auth/presentation/widgets/text_filed_widget1.dart';
 
+import '../../../../../core/di/services.dart';
 import '../../../../../core/route/route_names.dart';
+import '../../../../../core/untils/logger.dart';
+import '../../../data/datasource/local/auth_local_data_cource.dart';
 import '../../bloc/auth_event.dart';
-import '../../bloc/register_user/sign_up_in_bloc.dart';
-import '../../bloc/register_user/sign_up_in_state.dart';
+import '../../bloc/log_in_user/log_in_user_bloc.dart';
+import '../../bloc/log_in_user/log_in_user_state.dart';
 import '../../widgets/eleveted_widgets.dart';
 
 class SignInPage extends StatefulWidget {
@@ -20,27 +24,56 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final FocusNode _passwordFocusNode = FocusNode();
-  final FocusNode _emailFocusNode = FocusNode();
+  final authLocalDataSource = sl<AuthLocalDataSource>();
+
 
   bool eye = true;
 
   @override
   void dispose() {
-    _passwordFocusNode.dispose();
     passwordController.dispose();
-    _emailFocusNode.dispose();
     emailController.dispose();
     super.dispose();
   }
 
-  void signIn() {
-    context.read<RegisterUserBloc>().add(
-      RegisterUser(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      ),
-    );
+  void signInUser() {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please fill in all fields"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    BlocProvider.of<LogInUserBloc>(
+      context,
+    ).add(LoginUser(email: email, password: password));
+  }
+  void saveRememberMe(String email, String password) {
+    authLocalDataSource
+        .saveRememberMe(email, password)
+        .then((_) {
+      LoggerService.info("Remember Me saved : $email - $password");
+    })
+        .catchError((error) {
+      LoggerService.error("Error saving Remember Me: $error");
+    });
+  }
+
+  void saveAuthToken(String accessToken, String refreshToken) {
+    authLocalDataSource
+        .saveAuthToken(refreshToken, accessToken)
+        .then((_) {
+      LoggerService.info("Auth Token saved : $accessToken - $refreshToken");
+    })
+        .catchError((error) {
+      LoggerService.error("Error saving Auth Token: $error");
+    });
   }
   bool card = true;
 
@@ -94,80 +127,45 @@ class _SignInPageState extends State<SignInPage> {
                  SizedBox(
                   height: 20.h,
                 ),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            card = !card;
-                          });
-                        },
-                        child: card
-                            ? Container(
-                          width: 25,
-                          height: 25,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            border: Border.all(
-                              color: Color(0xff335EF7),
-                              width: 3,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        )
-                            : Container(
-                          width: 25,
-                          height: 25,
-                          decoration: BoxDecoration(
-                            image: const DecorationImage(
-                                image: AssetImage(
-                                    'assets/sign/galichka.png')),
-                            border: Border.all(
-                              color: Color(0xff335EF7),
-                              width: 3,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      const Text("Remember me")
-                    ],
-                  ),
-                ),
-                 SizedBox(
-                  height: 20.h,
-                ),
-                BlocConsumer<RegisterUserBloc, RegisterUserState>(
+                BlocConsumer<LogInUserBloc, LogInUserState>(
                   listener: (context, state) {
-                    if (state is RegisterUserSuccess) {
-                      Navigator.pushNamed(context, RouteNames.homePage);
-                    } else if (state is RegisterUserError) {
-                      print('Error state: ${state.error}');
+                    if (state is LogInUserSuccess) {
+                      saveRememberMe(
+                        emailController.text,
+                        passwordController.text,
+                      );
+                      saveAuthToken(state.user.accessToken, state.user.refreshToken);
+                      Navigator.pushReplacementNamed(context, RouteNames.bottom_Navbar);
+                    } else if (state is LogInUserError) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(state.error),
+                          content: Text(state.message),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
                   },
                   builder: (context, state) {
-                    if (state is RegisterUserLoading) {
-                      return CircularProgressIndicator();
+                    if (state is LogInUserLoading) {
+                      return const Center(
+                        child: SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: LoadingIndicator(
+                            indicatorType: Indicator.ballSpinFadeLoader,
+                            colors: [Colors.blueAccent],
+                            strokeWidth: 2,
+                          ),
+                        ),);
+                    } else {
+                      return LogInElevated(
+                        text: "Sign In",
+                        onPressed: signInUser,
+                      );
                     }
-                    return LogInElevated(
-                      text: "Sign in",
-                      onPressed: () {
-                        signIn();
-                      },
-                    );
                   },
                 ),
+
                  SizedBox(
                   height: 20.h,
                 ),

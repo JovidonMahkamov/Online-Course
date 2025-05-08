@@ -4,5 +4,4 @@ class Category {
   final String slug;
 
   Category({required this.id, required this.name, required this.slug});
-
 }

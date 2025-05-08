@@ -33,14 +33,14 @@ class _SettingEditProfileState extends State<SettingEditProfile> {
                 const SizedBox(
                   height: 20,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Full Name',
                   obscureText: false,
                 ),
                 const SizedBox(
                   height: 10,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Nickname ',
                   obscureText: false,
                 ),
@@ -68,7 +68,7 @@ class _SettingEditProfileState extends State<SettingEditProfile> {
                 const SizedBox(
                   height: 20,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Phone Number ',
                   obscureText: false,
                   prefixIcon: Icon(
@@ -83,7 +83,7 @@ class _SettingEditProfileState extends State<SettingEditProfile> {
                 const SizedBox(
                   height: 20,
                 ),
-                const TextFiledWidget1(
+                 TextFiledWidget1(
                   text: 'Jobs',
                   obscureText: false,
                 ),
